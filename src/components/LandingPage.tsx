@@ -166,6 +166,31 @@ function InteractiveGrid() {
     opacity: isVisible ? 1 : 0,
     transition: 'opacity 0.2s ease-out',
     pointerEvents: 'none', // Prevent the grid from blocking mouse events
+    background: 'transparent', // Make the grid background transparent
+  } as React.CSSProperties;
+  
+  // Mask style for the grid container
+  const maskStyle = {
+    '--cursor-x': `${mousePos.x}px`,
+    '--cursor-y': `${mousePos.y}px`,
+    '--visible-radius': `${visibleRadius}px`,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'white',
+    WebkitMask: `radial-gradient(
+      circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
+      black var(--visible-radius), 
+      transparent calc(var(--visible-radius) + 1px)
+    )`,
+    mask: `radial-gradient(
+      circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
+      black var(--visible-radius), 
+      transparent calc(var(--visible-radius) + 1px)
+    )`,
+    pointerEvents: 'none',
   } as React.CSSProperties;
 
   // Add event listeners when component mounts
@@ -185,8 +210,17 @@ function InteractiveGrid() {
     <div 
       ref={gridRef}
       className="fixed inset-0 z-0 overflow-hidden"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'white',
+        zIndex: 0,
+      }}
     >
-      {/* Grid background with dynamic mask */}
+      {/* Grid background */}
       <div 
         className="absolute inset-0"
         style={{
@@ -196,23 +230,17 @@ function InteractiveGrid() {
             linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)
           `,
           backgroundSize: 'var(--grid-size) var(--grid-size)',
-          maskImage: `radial-gradient(
-            circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
-            white 0%, 
-            transparent calc(var(--visible-radius) - 1px),
-            transparent var(--visible-radius),
-            white calc(var(--visible-radius) + 1px)
-          )`,
-          WebkitMaskImage: `radial-gradient(
-            circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
-            white 0%, 
-            transparent calc(var(--visible-radius) - 1px),
-            transparent var(--visible-radius),
-            white calc(var(--visible-radius) + 1px)
-          )`,
-          maskSize: '100% 100%',
-          WebkitMaskSize: '100% 100%',
-          pointerEvents: 'none', // Only the container should capture events
+          backgroundColor: 'transparent',
+          zIndex: 1,
+        }}
+      />
+      
+      {/* Mask layer that shows the grid through the hole */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          ...maskStyle,
+          zIndex: 2,
         }}
       />
       
