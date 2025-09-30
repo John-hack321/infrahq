@@ -97,69 +97,138 @@ function Interactive3DObject() {
 
 // Interactive grid that only appears near the cursor
 function InteractiveGrid() {
-  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+  const [isVisible, setIsVisible] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const gridRef = useRef<HTMLDivElement>(null);
   const gridSize = 40; // Size of each grid cell in pixels
-  const visibleRadius = 200; // How far from cursor the grid is visible
+  const visibleRadius = 200; // Radius of the visible grid area
+  let rafId: number;
   
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
+  const updateMousePosition = (e: MouseEvent) => {
+    if (!gridRef.current) return;
+    
+    const rect = gridRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Only update if position changed significantly (performance optimization)
+    if (Math.abs(mousePos.x - x) > 1 || Math.abs(mousePos.y - y) > 1) {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setMousePos({ x, y });
+      });
+    }
+
+    // Make sure the grid is visible when moving
+    if (!isVisible) {
+      setIsVisible(true);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    setIsVisible(true);
+    if (gridRef.current) {
+      gridRef.current.addEventListener('mousemove', updateMousePosition);
+    }
   };
 
   const handleMouseLeave = () => {
-    setMousePos({ x: -1000, y: -1000 }); // Move off screen when mouse leaves
+    setIsVisible(false);
+    if (gridRef.current) {
+      gridRef.current.removeEventListener('mousemove', updateMousePosition);
+    }
   };
 
-  // Create a mask that reveals the grid only near the cursor
-  const maskStyle = {
-    '--mask-x': `${mousePos.x}px`,
-    '--mask-y': `${mousePos.y}px`,
-    '--mask-radius': `${visibleRadius}px`,
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (grid) {
+      grid.addEventListener('mouseenter', handleMouseEnter);
+      grid.addEventListener('mouseleave', handleMouseLeave);
+    }
+    
+    return () => {
+      if (grid) {
+        grid.removeEventListener('mouseenter', handleMouseEnter);
+        grid.removeEventListener('mouseleave', handleMouseLeave);
+        grid.removeEventListener('mousemove', updateMousePosition);
+      }
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  // Grid style with CSS variables for dynamic updates
+  const gridStyle = {
+    '--grid-size': `${gridSize}px`,
+    '--grid-color': 'rgba(16, 185, 129, 0.8)',
+    '--cursor-x': `${mousePos.x}px`,
+    '--cursor-y': `${mousePos.y}px`,
+    '--visible-radius': `${visibleRadius}px`,
+    opacity: isVisible ? 1 : 0,
+    transition: 'opacity 0.2s ease-out',
+    pointerEvents: 'none', // Prevent the grid from blocking mouse events
   } as React.CSSProperties;
+
+  // Add event listeners when component mounts
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      updateMousePosition(e);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
     <div 
-      className="fixed inset-0 z-0"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      ref={gridRef}
+      className="fixed inset-0 z-0 overflow-hidden"
     >
-      {/* Hidden grid that only shows through the mask */}
+      {/* Grid background with dynamic mask */}
       <div 
-        className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
+        className="absolute inset-0"
         style={{
-          ...maskStyle,
+          ...gridStyle,
           backgroundImage: `
-            linear-gradient(to right, #10b981 1px, transparent 1px),
-            linear-gradient(to bottom, #10b981 1px, transparent 1px)
+            linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)
           `,
-          backgroundSize: `${gridSize}px ${gridSize}px`,
-          WebkitMaskImage: `radial-gradient(
-            circle at var(--mask-x, 0) var(--mask-y, 0), 
-            black 0%, 
-            transparent calc(var(--mask-radius, 100px) * 0.8), 
-            transparent calc(var(--mask-radius, 100px) * 1.2), 
-            black calc(var(--mask-radius, 100px) * 1.5)
-          )`,
+          backgroundSize: 'var(--grid-size) var(--grid-size)',
           maskImage: `radial-gradient(
-            circle at var(--mask-x, 0) var(--mask-y, 0), 
-            black 0%, 
-            transparent calc(var(--mask-radius, 100px) * 0.8), 
-            transparent calc(var(--mask-radius, 100px) * 1.2), 
-            black calc(var(--mask-radius, 100px) * 1.5)
+            circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
+            white 0%, 
+            transparent calc(var(--visible-radius) - 1px),
+            transparent var(--visible-radius),
+            white calc(var(--visible-radius) + 1px)
           )`,
+          WebkitMaskImage: `radial-gradient(
+            circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
+            white 0%, 
+            transparent calc(var(--visible-radius) - 1px),
+            transparent var(--visible-radius),
+            white calc(var(--visible-radius) + 1px)
+          )`,
+          maskSize: '100% 100%',
+          WebkitMaskSize: '100% 100%',
+          pointerEvents: 'none', // Only the container should capture events
         }}
       />
       
       {/* Cursor highlight */}
       <div 
-        className="absolute w-6 h-6 rounded-full pointer-events-none"
+        className="absolute w-8 h-8 rounded-full pointer-events-none"
         style={{
-          left: `${mousePos.x - 12}px`,
-          top: `${mousePos.y - 12}px`,
-          background: 'rgba(16, 185, 129, 0.3)',
+          left: `calc(var(--cursor-x, -100px) - 16px)`,
+          top: `calc(var(--cursor-y, -100px) - 16px)`,
+          background: 'rgba(16, 185, 129, 0.15)',
+          border: '1px solid rgba(16, 185, 129, 0.6)',
           transform: 'translateZ(0)',
-          transition: 'left 0.05s ease-out, top 0.05s ease-out',
+          transition: 'left 0.1s ease-out, top 0.1s ease-out, opacity 0.2s ease-out',
           willChange: 'left, top',
-          boxShadow: '0 0 0 1px rgba(16, 185, 129, 0.5)',
+          opacity: isVisible ? 1 : 0,
+          pointerEvents: 'none',
         }}
       />
     </div>
