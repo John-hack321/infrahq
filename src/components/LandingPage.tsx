@@ -103,7 +103,7 @@ function InteractiveGrid() {
   const activeCells = useRef<Set<string>>(new Set());
   const gridSize = 50; // Size of each grid cell in pixels
   const fadeSpeed = 0.8; // Slightly faster fade for better trail effect
-  const trailLength = 16; // Number of cells to keep in the trail
+  const trailLength = 40; // Number of cells to keep in the trail
   
   // Track previous positions for trail
   const positionHistory = useRef<Array<{x: number, y: number, time: number}>>([]);
