@@ -156,21 +156,10 @@ function InteractiveGrid() {
     };
   }, []);
 
-  // Grid style with CSS variables for dynamic updates
+  // Combined grid and mask style
   const gridStyle = {
     '--grid-size': `${gridSize}px`,
     '--grid-color': 'rgba(16, 185, 129, 0.8)',
-    '--cursor-x': `${mousePos.x}px`,
-    '--cursor-y': `${mousePos.y}px`,
-    '--visible-radius': `${visibleRadius}px`,
-    opacity: isVisible ? 1 : 0,
-    transition: 'opacity 0.2s ease-out',
-    pointerEvents: 'none', // Prevent the grid from blocking mouse events
-    background: 'transparent', // Make the grid background transparent
-  } as React.CSSProperties;
-  
-  // Mask style for the grid container
-  const maskStyle = {
     '--cursor-x': `${mousePos.x}px`,
     '--cursor-y': `${mousePos.y}px`,
     '--visible-radius': `${visibleRadius}px`,
@@ -179,7 +168,15 @@ function InteractiveGrid() {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'white',
+    opacity: isVisible ? 1 : 0,
+    transition: 'opacity 0.2s ease-out',
+    pointerEvents: 'none',
+    backgroundImage: `
+      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)
+    `,
+    backgroundSize: 'var(--grid-size) var(--grid-size)',
+    backgroundColor: 'transparent',
     WebkitMask: `radial-gradient(
       circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
       black var(--visible-radius), 
@@ -189,8 +186,7 @@ function InteractiveGrid() {
       circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
       black var(--visible-radius), 
       transparent calc(var(--visible-radius) + 1px)
-    )`,
-    pointerEvents: 'none',
+    )`
   } as React.CSSProperties;
 
   // Add event listeners when component mounts
@@ -220,28 +216,10 @@ function InteractiveGrid() {
         zIndex: 0,
       }}
     >
-      {/* Grid background */}
+      {/* Grid with mask applied */}
       <div 
         className="absolute inset-0"
-        style={{
-          ...gridStyle,
-          backgroundImage: `
-            linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-            linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)
-          `,
-          backgroundSize: 'var(--grid-size) var(--grid-size)',
-          backgroundColor: 'transparent',
-          zIndex: 1,
-        }}
-      />
-      
-      {/* Mask layer that shows the grid through the hole */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          ...maskStyle,
-          zIndex: 2,
-        }}
+        style={gridStyle}
       />
       
       {/* Cursor highlight */}
