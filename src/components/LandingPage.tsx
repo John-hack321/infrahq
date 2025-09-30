@@ -95,45 +95,63 @@ function Interactive3DObject() {
   );
 }
 
-// CSS-based interactive grid background
+// CSS-based interactive grid with cursor-following glow
 function InteractiveGrid() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const gridSize = 40; // Size of each grid cell in pixels
+  
+  // Calculate grid-aligned position
+  const getGridPosition = (clientX: number, clientY: number) => {
+    const x = Math.round(clientX / gridSize) * gridSize;
+    const y = Math.round(clientY / gridSize) * gridSize;
+    return { x, y };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { x, y } = getGridPosition(e.clientX, e.clientY);
+    setMousePos({ x, y });
+  };
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-0">
-      {/* Grid background */}
+    <div 
+      className="fixed inset-0 pointer-events-none z-0"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Grid background - more visible */}
       <div 
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0"
         style={{
           backgroundImage: `
-            linear-gradient(to right, #10b981 1px, transparent 1px),
-            linear-gradient(to bottom, #10b981 1px, transparent 1px)
+            linear-gradient(to right, rgba(16, 185, 129, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '40px 40px',
-          maskImage: 'radial-gradient(ellipse at center, black 10%, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at center, black 10%, transparent 70%)',
+          backgroundSize: `${gridSize}px ${gridSize}px`,
         }}
       />
       
-      {/* Animated dots */}
+      {/* Grid dots at intersections */}
       <div 
         className="absolute inset-0"
         style={{
-          backgroundImage: 'radial-gradient(circle at center, #10b981 0%, transparent 70%)',
-          opacity: 0.5,
-          backgroundSize: '200px 200px',
-          backgroundPosition: 'var(--mouse-x) var(--mouse-y)',
-          transition: 'background-position 0.1s ease-out',
-          pointerEvents: 'none',
+          backgroundImage: `
+            radial-gradient(circle 1px, #10b981 1px, transparent 1px)
+          `,
+          backgroundSize: `${gridSize}px ${gridSize}px`,
+          backgroundPosition: '1px 1px',
+          opacity: 0.5
         }}
       />
       
-      {/* Mouse tracking */}
+      {/* Cursor glow */}
       <div 
-        className="absolute inset-0"
-        onMouseMove={(e) => {
-          const x = e.clientX / window.innerWidth * 100;
-          const y = e.clientY / window.innerHeight * 100;
-          document.documentElement.style.setProperty('--mouse-x', `${x}%`);
-          document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+        className="absolute w-32 h-32 rounded-full pointer-events-none"
+        style={{
+          left: `${mousePos.x - 64}px`,
+          top: `${mousePos.y - 64}px`,
+          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)',
+          transform: 'translateZ(0)',
+          transition: 'left 0.1s ease-out, top 0.1s ease-out',
+          willChange: 'left, top',
         }}
       />
     </div>
@@ -222,11 +240,11 @@ function Scene() {
 export default function InfraredLanding() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-white">
-      {/* Interactive Grid Background */}
-      <InteractiveGrid />
-      
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 z-0"></div>
+      
+      {/* Interactive Grid Background */}
+      <InteractiveGrid />
       
       {/* Main Content Grid */}
       <div className="relative z-10 h-full max-w-7xl mx-auto px-12 flex items-center">
