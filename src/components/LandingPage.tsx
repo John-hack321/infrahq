@@ -101,7 +101,7 @@ function InteractiveGrid() {
   const cellsRef = useRef<Map<string, { element: HTMLDivElement; opacity: number }>>(new Map());
   const animationFrameId = useRef<number>();
   const gridSize = 40; // Size of each grid cell in pixels
-  const fadeSpeed = 1.5; // Controls how fast the glow fades (higher = faster)
+  const fadeSpeed = 2.0; // Controls how fast the glow fades (higher = faster)
   
   // Track mouse position and update active cells
   const handleMouseMove = (e: MouseEvent) => {
@@ -146,20 +146,22 @@ function InteractiveGrid() {
     const glowColor = '#10b981';
     
     element.style.backgroundColor = `rgba(16, 185, 129, ${opacity * 0.1})`;
-    element.style.border = `1px solid rgba(16, 185, 129, ${opacity * 0.7})`;
-    element.style.boxShadow = `0 0 ${opacity * 15}px ${opacity * 8}px rgba(16, 185, 129, ${opacity * 0.6})`;
+    element.style.border = `1px solid rgba(16, 185, 129, ${opacity * 0.8})`;
+    element.style.boxShadow = `0 0 ${opacity * 12}px ${opacity * 6}px rgba(16, 185, 129, ${opacity * 0.7})`;
     element.style.borderRadius = '2px';
-    element.style.transition = 'opacity 0.3s ease-out, transform 0.2s ease-out';
+    element.style.transition = 'opacity 0.1s linear, transform 0.05s ease-out';
     element.style.transform = `scale(${1 + opacity * 0.1})`;
   };
   
   // Animation loop to handle fading out cells
-  const animate = () => {
+  const animate = (timestamp: number) => {
     let needsUpdate = false;
+    const deltaTime = 16; // ~60fps
     
     cellsRef.current.forEach((cell, key) => {
       if (cell.opacity > 0) {
-        cell.opacity = Math.max(0, cell.opacity - fadeSpeed * 0.016); // 0.016 is ~60fps
+        // Decrease opacity based on time and fade speed
+        cell.opacity = Math.max(0, cell.opacity - (fadeSpeed * deltaTime) / 1000);
         updateCellStyle(cell);
         needsUpdate = true;
       } else if (cell.element.parentNode) {
@@ -186,7 +188,10 @@ function InteractiveGrid() {
     
     // Start the animation loop if not already running
     if (!animationFrameId.current) {
-      animationFrameId.current = requestAnimationFrame(animate);
+      const animateLoop = (timestamp: number) => {
+        animate(timestamp);
+      };
+      animationFrameId.current = requestAnimationFrame(animateLoop);
     }
     
     return () => {
