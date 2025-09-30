@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -95,6 +95,51 @@ function Interactive3DObject() {
   );
 }
 
+// CSS-based interactive grid background
+function InteractiveGrid() {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0">
+      {/* Grid background */}
+      <div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #10b981 1px, transparent 1px),
+            linear-gradient(to bottom, #10b981 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+          maskImage: 'radial-gradient(ellipse at center, black 10%, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 10%, transparent 70%)',
+        }}
+      />
+      
+      {/* Animated dots */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'radial-gradient(circle at center, #10b981 0%, transparent 70%)',
+          opacity: 0.5,
+          backgroundSize: '200px 200px',
+          backgroundPosition: 'var(--mouse-x) var(--mouse-y)',
+          transition: 'background-position 0.1s ease-out',
+          pointerEvents: 'none',
+        }}
+      />
+      
+      {/* Mouse tracking */}
+      <div 
+        className="absolute inset-0"
+        onMouseMove={(e) => {
+          const x = e.clientX / window.innerWidth * 100;
+          const y = e.clientY / window.innerHeight * 100;
+          document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+          document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+        }}
+      />
+    </div>
+  );
+}
+
 // Ambient particles
 function AmbientParticles() {
   const pointsRef = useRef<THREE.Points>(null);
@@ -177,6 +222,9 @@ function Scene() {
 export default function InfraredLanding() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-white">
+      {/* Interactive Grid Background */}
+      <InteractiveGrid />
+      
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 z-0"></div>
       
