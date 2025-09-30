@@ -95,63 +95,71 @@ function Interactive3DObject() {
   );
 }
 
-// CSS-based interactive grid with cursor-following glow
+// Interactive grid that only appears near the cursor
 function InteractiveGrid() {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
   const gridSize = 40; // Size of each grid cell in pixels
+  const visibleRadius = 200; // How far from cursor the grid is visible
   
-  // Calculate grid-aligned position
-  const getGridPosition = (clientX: number, clientY: number) => {
-    const x = Math.round(clientX / gridSize) * gridSize;
-    const y = Math.round(clientY / gridSize) * gridSize;
-    return { x, y };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const { x, y } = getGridPosition(e.clientX, e.clientY);
-    setMousePos({ x, y });
+  const handleMouseLeave = () => {
+    setMousePos({ x: -1000, y: -1000 }); // Move off screen when mouse leaves
   };
+
+  // Create a mask that reveals the grid only near the cursor
+  const maskStyle = {
+    '--mask-x': `${mousePos.x}px`,
+    '--mask-y': `${mousePos.y}px`,
+    '--mask-radius': `${visibleRadius}px`,
+  } as React.CSSProperties;
 
   return (
     <div 
-      className="fixed inset-0 pointer-events-none z-0"
+      className="fixed inset-0 z-0"
       onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Grid background - more visible */}
+      {/* Hidden grid that only shows through the mask */}
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
         style={{
+          ...maskStyle,
           backgroundImage: `
-            linear-gradient(to right, rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
+            linear-gradient(to right, #10b981 1px, transparent 1px),
+            linear-gradient(to bottom, #10b981 1px, transparent 1px)
           `,
           backgroundSize: `${gridSize}px ${gridSize}px`,
+          WebkitMaskImage: `radial-gradient(
+            circle at var(--mask-x, 0) var(--mask-y, 0), 
+            black 0%, 
+            transparent calc(var(--mask-radius, 100px) * 0.8), 
+            transparent calc(var(--mask-radius, 100px) * 1.2), 
+            black calc(var(--mask-radius, 100px) * 1.5)
+          )`,
+          maskImage: `radial-gradient(
+            circle at var(--mask-x, 0) var(--mask-y, 0), 
+            black 0%, 
+            transparent calc(var(--mask-radius, 100px) * 0.8), 
+            transparent calc(var(--mask-radius, 100px) * 1.2), 
+            black calc(var(--mask-radius, 100px) * 1.5)
+          )`,
         }}
       />
       
-      {/* Grid dots at intersections */}
+      {/* Cursor highlight */}
       <div 
-        className="absolute inset-0"
+        className="absolute w-6 h-6 rounded-full pointer-events-none"
         style={{
-          backgroundImage: `
-            radial-gradient(circle 1px, #10b981 1px, transparent 1px)
-          `,
-          backgroundSize: `${gridSize}px ${gridSize}px`,
-          backgroundPosition: '1px 1px',
-          opacity: 0.5
-        }}
-      />
-      
-      {/* Cursor glow */}
-      <div 
-        className="absolute w-32 h-32 rounded-full pointer-events-none"
-        style={{
-          left: `${mousePos.x - 64}px`,
-          top: `${mousePos.y - 64}px`,
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)',
+          left: `${mousePos.x - 12}px`,
+          top: `${mousePos.y - 12}px`,
+          background: 'rgba(16, 185, 129, 0.3)',
           transform: 'translateZ(0)',
-          transition: 'left 0.1s ease-out, top 0.1s ease-out',
+          transition: 'left 0.05s ease-out, top 0.05s ease-out',
           willChange: 'left, top',
+          boxShadow: '0 0 0 1px rgba(16, 185, 129, 0.5)',
         }}
       />
     </div>
