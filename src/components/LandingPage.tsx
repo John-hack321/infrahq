@@ -95,117 +95,122 @@ function Interactive3DObject() {
   );
 }
 
-// Interactive grid that only appears near the cursor
+// Interactive grid with glowing cells
 function InteractiveGrid() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const gridRef = useRef<HTMLDivElement>(null);
+  const cellsRef = useRef<Map<string, { element: HTMLDivElement; opacity: number }>>(new Map());
+  const animationFrameId = useRef<number>();
   const gridSize = 40; // Size of each grid cell in pixels
-  const visibleRadius = 200; // Radius of the visible grid area
-  let rafId: number;
+  const fadeSpeed = 1.5; // Controls how fast the glow fades (higher = faster)
   
-  const updateMousePosition = (e: MouseEvent) => {
+  // Track mouse position and update active cells
+  const handleMouseMove = (e: MouseEvent) => {
     if (!gridRef.current) return;
     
     const rect = gridRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Only update if position changed significantly (performance optimization)
-    if (Math.abs(mousePos.x - x) > 1 || Math.abs(mousePos.y - y) > 1) {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        setMousePos({ x, y });
-      });
+    // Make sure coordinates are within bounds
+    if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+    
+    // Calculate which cell the cursor is in
+    const cellX = Math.floor(x / gridSize) * gridSize;
+    const cellY = Math.floor(y / gridSize) * gridSize;
+    const cellKey = `${cellX},${cellY}`;
+    
+    // Get or create the cell
+    let cell = cellsRef.current.get(cellKey);
+    if (!cell) {
+      const element = document.createElement('div');
+      element.className = 'absolute transition-all duration-300';
+      element.style.left = `${cellX}px`;
+      element.style.top = `${cellY}px`;
+      element.style.width = `${gridSize}px`;
+      element.style.height = `${gridSize}px`;
+      element.style.pointerEvents = 'none';
+      gridRef.current.appendChild(element);
+      
+      cell = { element, opacity: 0 };
+      cellsRef.current.set(cellKey, cell);
     }
-
-    // Make sure the grid is visible when moving
-    if (!isVisible) {
-      setIsVisible(true);
+    
+    // Reset the cell's opacity to full when hovered
+    cell.opacity = 1;
+    updateCellStyle(cell);
+  };
+  
+  // Update a cell's visual style based on its current opacity
+  const updateCellStyle = (cell: { element: HTMLDivElement; opacity: number }) => {
+    const { element, opacity } = cell;
+    const glowColor = '#10b981';
+    
+    element.style.backgroundColor = `rgba(16, 185, 129, ${opacity * 0.1})`;
+    element.style.border = `1px solid rgba(16, 185, 129, ${opacity * 0.7})`;
+    element.style.boxShadow = `0 0 ${opacity * 15}px ${opacity * 8}px rgba(16, 185, 129, ${opacity * 0.6})`;
+    element.style.borderRadius = '2px';
+    element.style.transition = 'opacity 0.3s ease-out, transform 0.2s ease-out';
+    element.style.transform = `scale(${1 + opacity * 0.1})`;
+  };
+  
+  // Animation loop to handle fading out cells
+  const animate = () => {
+    let needsUpdate = false;
+    
+    cellsRef.current.forEach((cell, key) => {
+      if (cell.opacity > 0) {
+        cell.opacity = Math.max(0, cell.opacity - fadeSpeed * 0.016); // 0.016 is ~60fps
+        updateCellStyle(cell);
+        needsUpdate = true;
+      } else if (cell.element.parentNode) {
+        // Remove the element when fully faded out
+        cell.element.remove();
+        cellsRef.current.delete(key);
+      }
+    });
+    
+    if (needsUpdate || cellsRef.current.size > 0) {
+      animationFrameId.current = requestAnimationFrame(animate);
+    } else {
+      animationFrameId.current = undefined;
     }
   };
-
-  const handleMouseEnter = () => {
-    setIsVisible(true);
-    if (gridRef.current) {
-      gridRef.current.addEventListener('mousemove', updateMousePosition);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setIsVisible(false);
-    if (gridRef.current) {
-      gridRef.current.removeEventListener('mousemove', updateMousePosition);
-    }
-  };
-
+  
+  // Set up and clean up event listeners and animation
   useEffect(() => {
     const grid = gridRef.current;
-    if (grid) {
-      grid.addEventListener('mouseenter', handleMouseEnter);
-      grid.addEventListener('mouseleave', handleMouseLeave);
+    if (!grid) return;
+    
+    // Use window for better tracking
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    // Start the animation loop if not already running
+    if (!animationFrameId.current) {
+      animationFrameId.current = requestAnimationFrame(animate);
     }
     
     return () => {
-      if (grid) {
-        grid.removeEventListener('mouseenter', handleMouseEnter);
-        grid.removeEventListener('mouseleave', handleMouseLeave);
-        grid.removeEventListener('mousemove', updateMousePosition);
+      window.removeEventListener('mousemove', handleMouseMove);
+      
+      // Clean up animation frame
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
       }
-      cancelAnimationFrame(rafId);
+      
+      // Clean up DOM elements
+      cellsRef.current.forEach(cell => {
+        if (cell.element.parentNode) {
+          cell.element.remove();
+        }
+      });
+      cellsRef.current.clear();
     };
   }, []);
-
-  // Combined grid and mask style
-  const gridStyle = {
-    '--grid-size': `${gridSize}px`,
-    '--grid-color': 'rgba(16, 185, 129, 0.8)',
-    '--cursor-x': `${mousePos.x}px`,
-    '--cursor-y': `${mousePos.y}px`,
-    '--visible-radius': `${visibleRadius}px`,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: isVisible ? 1 : 0,
-    transition: 'opacity 0.2s ease-out',
-    pointerEvents: 'none',
-    backgroundImage: `
-      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)
-    `,
-    backgroundSize: 'var(--grid-size) var(--grid-size)',
-    backgroundColor: 'transparent',
-    WebkitMask: `radial-gradient(
-      circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
-      black var(--visible-radius), 
-      transparent calc(var(--visible-radius) + 1px)
-    )`,
-    mask: `radial-gradient(
-      circle at var(--cursor-x, -100px) var(--cursor-y, -100px), 
-      black var(--visible-radius), 
-      transparent calc(var(--visible-radius) + 1px)
-    )`
-  } as React.CSSProperties;
-
-  // Add event listeners when component mounts
-  useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
-      updateMousePosition(e);
-    };
-
-    window.addEventListener('mousemove', handleMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      cancelAnimationFrame(rafId);
-    };
-  }, []);
-
+  
   return (
     <div 
       ref={gridRef}
-      className="fixed inset-0 z-0 overflow-hidden"
+      className="fixed inset-0 overflow-hidden"
       style={{
         position: 'fixed',
         top: 0,
@@ -213,27 +218,19 @@ function InteractiveGrid() {
         right: 0,
         bottom: 0,
         backgroundColor: 'white',
-        zIndex: 0,
+        zIndex: 1,
+        pointerEvents: 'none',
       }}
     >
-      {/* Grid with mask applied */}
+      {/* Background grid lines */}
       <div 
         className="absolute inset-0"
-        style={gridStyle}
-      />
-      
-      {/* Cursor highlight */}
-      <div 
-        className="absolute w-8 h-8 rounded-full pointer-events-none"
         style={{
-          left: `calc(var(--cursor-x, -100px) - 16px)`,
-          top: `calc(var(--cursor-y, -100px) - 16px)`,
-          background: 'rgba(16, 185, 129, 0.15)',
-          border: '1px solid rgba(16, 185, 129, 0.6)',
-          transform: 'translateZ(0)',
-          transition: 'left 0.1s ease-out, top 0.1s ease-out, opacity 0.2s ease-out',
-          willChange: 'left, top',
-          opacity: isVisible ? 1 : 0,
+          backgroundImage: `
+            linear-gradient(to right, rgba(16, 185, 129, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           pointerEvents: 'none',
         }}
       />
