@@ -100,13 +100,23 @@ function InteractiveGrid() {
   const gridRef = useRef<HTMLDivElement>(null);
   const cellsRef = useRef<Map<string, { element: HTMLDivElement; opacity: number; lastUpdate: number }>>(new Map());
   const animationFrameId = useRef<number>();
-  const gridSize = 40; // Size of each grid cell in pixels
-  const fadeSpeed = 0.6; // Controls how fast the glow fades (higher = faster, 1.0 = 1 second)
-  const glowRadius = 1; // How many cells around the cursor to light up (1 = 3x3 grid, 2 = 5x5 grid)
+  const activeCells = useRef<Set<string>>(new Set());
+  const gridSize = 50; // Size of each grid cell in pixels
+  const fadeSpeed = 0.8; // Slightly faster fade for better trail effect
+  const trailLength = 16; // Number of cells to keep in the trail
+  
+  // Track previous positions for trail
+  const positionHistory = useRef<Array<{x: number, y: number, time: number}>>([]);
+  const lastUpdateTime = useRef<number>(0);
   
   // Track mouse position and update active cells
   const handleMouseMove = (e: MouseEvent) => {
     if (!gridRef.current) return;
+    
+    const now = Date.now();
+    // Throttle updates for smoother performance
+    if (now - lastUpdateTime.current < 16) return; // ~60fps
+    lastUpdateTime.current = now;
     
     const rect = gridRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -119,45 +129,66 @@ function InteractiveGrid() {
     const centerCellX = Math.floor(x / gridSize);
     const centerCellY = Math.floor(y / gridSize);
     
-    // Light up surrounding cells
-    for (let dx = -glowRadius; dx <= glowRadius; dx++) {
-      for (let dy = -glowRadius; dy <= glowRadius; dy++) {
-        const cellGridX = centerCellX + dx;
-        const cellGridY = centerCellY + dy;
-        const cellX = cellGridX * gridSize;
-        const cellY = cellGridY * gridSize;
-        
-        // Skip cells outside viewport
-        if (cellX < 0 || cellY < 0 || cellX >= rect.width || cellY >= rect.height) continue;
-        
-        const cellKey = `${cellX},${cellY}`;
-        
-        // Calculate distance from center for fade effect
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const intensity = Math.max(0, 1 - (distance / (glowRadius + 1)));
-        
-        // Get or create the cell
-        let cell = cellsRef.current.get(cellKey);
-        if (!cell) {
-          const element = document.createElement('div');
-          element.className = 'absolute';
-          element.style.left = `${cellX}px`;
-          element.style.top = `${cellY}px`;
-          element.style.width = `${gridSize}px`;
-          element.style.height = `${gridSize}px`;
-          element.style.pointerEvents = 'none';
-          gridRef.current.appendChild(element);
-          
-          cell = { element, opacity: 0, lastUpdate: Date.now() };
-          cellsRef.current.set(cellKey, cell);
-        }
-        
-        // Set the cell's opacity based on distance
-        cell.opacity = intensity;
-        cell.lastUpdate = Date.now();
-        updateCellStyle(cell);
-      }
+    // Add current position to history
+    positionHistory.current.unshift({
+      x: centerCellX,
+      y: centerCellY,
+      time: now
+    });
+    
+    // Keep only the last N positions for the trail
+    if (positionHistory.current.length > trailLength) {
+      positionHistory.current.pop();
     }
+    
+    // Clear the previous active cells set
+    const newActiveCells = new Set<string>();
+    
+    // Update cells along the trail
+    positionHistory.current.forEach((pos, index) => {
+      const cellX = pos.x * gridSize;
+      const cellY = pos.y * gridSize;
+      
+      // Skip if outside viewport
+      if (cellX < 0 || cellY < 0 || cellX >= rect.width || cellY >= rect.height) return;
+      
+      const cellKey = `${cellX},${cellY}`;
+      newActiveCells.add(cellKey);
+      
+      // Get or create the cell
+      let cell = cellsRef.current.get(cellKey);
+      if (!cell) {
+        const element = document.createElement('div');
+        element.className = 'absolute';
+        element.style.left = `${cellX}px`;
+        element.style.top = `${cellY}px`;
+        element.style.width = `${gridSize}px`;
+        element.style.height = `${gridSize}px`;
+        element.style.pointerEvents = 'none';
+        gridRef.current.appendChild(element);
+        
+        cell = { element, opacity: 0, lastUpdate: now };
+        cellsRef.current.set(cellKey, cell);
+      }
+      
+      // Calculate opacity based on position in the trail (newer = more opaque)
+      const opacity = 1 - (index / trailLength);
+      cell.opacity = Math.max(0, Math.min(1, opacity));
+      cell.lastUpdate = now;
+      updateCellStyle(cell);
+    });
+    
+    // Mark cells that are no longer active to start fading immediately
+    activeCells.current.forEach(cellKey => {
+      if (!newActiveCells.has(cellKey)) {
+        const cell = cellsRef.current.get(cellKey);
+        if (cell) {
+          cell.lastUpdate = 0; // Mark for immediate fade
+        }
+      }
+    });
+    
+    activeCells.current = newActiveCells;
   };
   
   // Update a cell's visual style based on its current opacity
@@ -170,46 +201,48 @@ function InteractiveGrid() {
       element.style.border = 'none';
       element.style.backgroundColor = 'transparent';
       element.style.boxShadow = 'none';
+      element.style.transition = 'all 0.3s ease-out';
     } else {
-      // Show the grid cell with glow effect
-      element.style.opacity = '1';
-      element.style.backgroundColor = `rgba(16, 185, 129, ${opacity * 0.05})`;
-      element.style.border = `1px solid rgba(16, 185, 129, ${opacity * 0.6})`;
+      // Show the grid cell with smoother glow effect
+      const scale = 0.9 + (opacity * 0.2); // Scale from 0.9 to 1.1 based on opacity
+      element.style.opacity = opacity.toString();
+      element.style.backgroundColor = `rgba(16, 185, 129, ${opacity * 0.15})`;
+      element.style.border = `1px solid rgba(16, 185, 129, ${opacity * 0.9})`;
       element.style.boxShadow = `
-        0 0 ${opacity * 20}px rgba(16, 185, 129, ${opacity * 0.3}),
-        inset 0 0 ${opacity * 10}px rgba(16, 185, 129, ${opacity * 0.1})
+        0 0 ${opacity * 20}px rgba(16, 185, 129, ${opacity * 0.7}),
+        inset 0 0 ${opacity * 10}px rgba(16, 185, 129, ${opacity * 0.3})
       `;
       element.style.borderRadius = '2px';
-      element.style.transform = `scale(${1 + opacity * 0.05})`;
+      element.style.transform = `scale(${scale})`;
+      element.style.transition = `all ${0.2 + (opacity * 0.3)}s ease-out`;
     }
   };
   
   // Animation loop to handle fading out cells
   const animate = () => {
-    const now = Date.now();
     let hasActiveCells = false;
     
     cellsRef.current.forEach((cell, key) => {
-      const timeSinceUpdate = (now - cell.lastUpdate) / 1000; // Convert to seconds
+      const isActive = activeCells.current.has(key);
       
-      if (timeSinceUpdate < 0.1) {
-        // Cell was just updated, keep it at current opacity
+      if (isActive) {
+        // Cell is currently active, keep it lit
         hasActiveCells = true;
       } else if (cell.opacity > 0) {
-        // Fade out the cell
-        const fadeAmount = fadeSpeed * (1 / 60); // Assuming 60fps
+        // Cell is not active, fade it out
+        const fadeAmount = fadeSpeed * 0.02; // Increased fade speed for better responsiveness
         cell.opacity = Math.max(0, cell.opacity - fadeAmount);
         updateCellStyle(cell);
         hasActiveCells = true;
-      } else if (cell.element.parentNode && timeSinceUpdate > 2) {
-        // Remove the element after it's been invisible for a while
+      } else if (cell.element.parentNode) {
+        // Remove the element after it's been invisible
         cell.element.remove();
         cellsRef.current.delete(key);
       }
     });
     
-    // Continue animation if there are active cells
-    if (hasActiveCells || cellsRef.current.size > 0) {
+    // Always continue the animation as long as we have cells
+    if (cellsRef.current.size > 0) {
       animationFrameId.current = requestAnimationFrame(animate);
     } else {
       animationFrameId.current = undefined;
@@ -226,20 +259,45 @@ function InteractiveGrid() {
     
     // Start the animation loop
     const startAnimation = () => {
+      // Always start the animation if there are cells to animate
       if (!animationFrameId.current) {
-        animationFrameId.current = requestAnimationFrame(animate);
+        const animateLoop = () => {
+          animate();
+          if (cellsRef.current.size > 0) {
+            animationFrameId.current = requestAnimationFrame(animateLoop);
+          } else {
+            animationFrameId.current = undefined;
+          }
+        };
+        animationFrameId.current = requestAnimationFrame(animateLoop);
       }
     };
     
+    // Start the animation immediately
     startAnimation();
+    
+    // Also start it on the next frame to ensure it keeps running
+    const frameId = requestAnimationFrame(startAnimation);
+    
+    // Set up a periodic check to ensure animation keeps running
+    const intervalId = setInterval(() => {
+      if (cellsRef.current.size > 0 && !animationFrameId.current) {
+        startAnimation();
+      }
+    }, 1000); // Check every second if animation needs to be restarted
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       
-      // Clean up animation frame
+      // Clean up animation frame and intervals
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = undefined;
       }
+      
+      // Clear any pending animation frames
+      cancelAnimationFrame(frameId);
+      clearInterval(intervalId);
       
       // Clean up DOM elements
       cellsRef.current.forEach(cell => {
@@ -248,6 +306,7 @@ function InteractiveGrid() {
         }
       });
       cellsRef.current.clear();
+      activeCells.current.clear();
     };
   }, []);
   
