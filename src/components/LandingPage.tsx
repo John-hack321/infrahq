@@ -99,7 +99,7 @@ function Interactive3DObject() {
 function InteractiveGrid() {
   const gridRef = useRef<HTMLDivElement>(null);
   const cellsRef = useRef<Map<string, { element: HTMLDivElement; opacity: number; lastUpdate: number }>>(new Map());
-  const animationFrameId = useRef<number>();
+  const animationFrameId = useRef<number | null>(null);
   const activeCells = useRef<Set<string>>(new Set());
   const gridSize = 50; // Size of each grid cell in pixels
   const fadeSpeed = 0.8; // Slightly faster fade for better trail effect
@@ -165,10 +165,15 @@ function InteractiveGrid() {
         element.style.width = `${gridSize}px`;
         element.style.height = `${gridSize}px`;
         element.style.pointerEvents = 'none';
-        gridRef.current.appendChild(element);
         
-        cell = { element, opacity: 0, lastUpdate: now };
-        cellsRef.current.set(cellKey, cell);
+        // Add null check before appending
+        if (gridRef.current) {
+          gridRef.current.appendChild(element);
+          cell = { element, opacity: 0, lastUpdate: now };
+          cellsRef.current.set(cellKey, cell);
+        } else {
+          return; // Skip if gridRef.current is null
+        }
       }
       
       // Calculate opacity based on position in the trail (newer = more opaque)
@@ -243,9 +248,21 @@ function InteractiveGrid() {
     
     // Always continue the animation as long as we have cells
     if (cellsRef.current.size > 0) {
-      animationFrameId.current = requestAnimationFrame(animate);
+      if (animationFrameId.current === null) {
+        const animateLoop = () => {
+          animate();
+          if (cellsRef.current.size > 0) {
+            const id = requestAnimationFrame(animateLoop);
+            animationFrameId.current = id;
+          } else {
+            animationFrameId.current = null;
+          }
+        };
+        const id = requestAnimationFrame(animateLoop);
+        animationFrameId.current = id;
+      }
     } else {
-      animationFrameId.current = undefined;
+      animationFrameId.current = null;
     }
   };
   
@@ -260,16 +277,18 @@ function InteractiveGrid() {
     // Start the animation loop
     const startAnimation = () => {
       // Always start the animation if there are cells to animate
-      if (!animationFrameId.current) {
+      if (animationFrameId.current === null) {
         const animateLoop = () => {
           animate();
           if (cellsRef.current.size > 0) {
-            animationFrameId.current = requestAnimationFrame(animateLoop);
+            const id = requestAnimationFrame(animateLoop);
+            animationFrameId.current = id;
           } else {
-            animationFrameId.current = undefined;
+            animationFrameId.current = null;
           }
         };
-        animationFrameId.current = requestAnimationFrame(animateLoop);
+        const id = requestAnimationFrame(animateLoop);
+        animationFrameId.current = id;
       }
     };
     
@@ -281,7 +300,7 @@ function InteractiveGrid() {
     
     // Set up a periodic check to ensure animation keeps running
     const intervalId = setInterval(() => {
-      if (cellsRef.current.size > 0 && !animationFrameId.current) {
+      if (cellsRef.current.size > 0 && animationFrameId.current === null) {
         startAnimation();
       }
     }, 1000); // Check every second if animation needs to be restarted
@@ -290,9 +309,9 @@ function InteractiveGrid() {
       window.removeEventListener('mousemove', handleMouseMove);
       
       // Clean up animation frame and intervals
-      if (animationFrameId.current) {
+      if (animationFrameId.current !== null) {
         cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = undefined;
+        animationFrameId.current = null;
       }
       
       // Clear any pending animation frames
@@ -446,15 +465,15 @@ export default function InfraredLanding() {
 
             {/* Stats/Quick Info */}
             <div className="flex gap-12 pt-4">
-              <div>
+              <div className='flex flex-col items-center'>
                 <div className="text-4xl font-bold text-emerald-600">3+</div>
                 <div className="text-sm text-gray-500 mt-1">Products in <br />Development</div>
               </div>
-              <div>
+              <div className='flex flex-col items-center'>
                 <div className="text-4xl font-bold text-emerald-600">$100k+</div>
                 <div className="text-sm text-gray-500 mt-1">Targeted Annual <br /> Revenue</div>
               </div>
-              <div>
+              <div className='flex flex-col items-center'>
                 <div className="text-4xl font-bold text-emerald-600">4</div>
                 <div className="text-sm text-gray-500 mt-1">Verticals</div>
               </div>
@@ -488,7 +507,7 @@ export default function InfraredLanding() {
       {/* Footer info */}
       <div className="absolute bottom-8 left-12 right-12 z-10 flex justify-between items-center">
         <div className="text-xs text-gray-400 tracking-wider">
-          SAN FRANCISCO · LONDON · SINGAPORE
+          NAIROBI . KENYA
         </div>
         <div className="text-xs text-gray-400">
           © 2025 INFRARED VENTURES
