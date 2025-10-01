@@ -440,19 +440,19 @@ export default function InfraredLanding() {
               
               <p className="text-xl text-gray-600 leading-relaxed max-w-lg font-light">
                 A venture studio at the frontier of technology. We identify paradigm shifts, 
-                architect solutions, and launch companies that define new markets.
+                architect solutions, and launch products that define new markets.
               </p>
             </div>
 
             {/* Stats/Quick Info */}
             <div className="flex gap-12 pt-4">
               <div>
-                <div className="text-4xl font-bold text-emerald-600">10+</div>
-                <div className="text-sm text-gray-500 mt-1">Companies Built</div>
+                <div className="text-4xl font-bold text-emerald-600">3+</div>
+                <div className="text-sm text-gray-500 mt-1">Products in <br />Development</div>
               </div>
               <div>
-                <div className="text-4xl font-bold text-emerald-600">$2B+</div>
-                <div className="text-sm text-gray-500 mt-1">Value Created</div>
+                <div className="text-4xl font-bold text-emerald-600">$100k+</div>
+                <div className="text-sm text-gray-500 mt-1">Targeted Annual <br /> Revenue</div>
               </div>
               <div>
                 <div className="text-4xl font-bold text-emerald-600">4</div>
