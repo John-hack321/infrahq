@@ -432,12 +432,23 @@ export default function InfraredLanding() {
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 z-0"></div>
       
+      {/* Navigation Header - Fixed at the top */}
+      <header className="fixed top-0 left-0 right-0 z-50 py-6 px-12">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-3xl font-extrabold text-black">._INFRARED</h1>
+          <nav className="flex space-x-10">
+            <a href="#"  className=" text-2xl hoverfont-extra-bold font-bold text-emerald-600 hover:text-black transition-colors duration-200">About</a>
+            <a href="#"  className=" text-2xl hoverfont-extra-bold font-bold text-emerald-600 hover:text-black transition-colors duration-200">Blog</a>
+            <a href="#"  className=" text-2xl hoverfont-extra-bold font-bold text-emerald-600 hover:text-black transition-colors duration-200">Contact</a>
+          </nav>
+        </div>
+      </header>
+
       {/* Interactive Grid Background */}
       <InteractiveGrid />
       
       {/* Main Content Grid */}
       <div className="relative z-10 h-full max-w-7xl mx-auto px-12 flex items-center">
-        <h2 className = "text-black">name</h2>
         <div className="grid grid-cols-12 gap-16 w-full items-center">
           
           {/* Left Column - Text Content */}
@@ -482,11 +493,17 @@ export default function InfraredLanding() {
 
             {/* CTA */}
             <div className="flex gap-4 pt-6">
-              <button className="px-8 py-4 bg-gray-900 text-white text-sm font-medium tracking-wide hover:bg-gray-800 transition-colors duration-200">
-                VIEW PORTFOLIO
+              <button className="relative px-8 py-4 overflow-hidden group border-2 border-black bg-black">
+                <span className="relative z-10 text-sm font-medium tracking-wide text-white group-hover:text-black transition-colors duration-300">
+                  VIEW PORTFOLIO
+                </span>
+                <span className="absolute inset-0 bg-white transition-all duration-300 ease-out transform -translate-x-full group-hover:translate-x-0"></span>
               </button>
-              <button className="px-8 py-4 border border-gray-300 text-gray-900 text-sm font-medium tracking-wide hover:border-gray-900 transition-colors duration-200">
-                PARTNER WITH US
+              <button className="relative px-8 py-4 overflow-hidden group border-2 border-black bg-white">
+                <span className="relative z-10 text-sm font-medium tracking-wide text-black group-hover:text-white transition-colors duration-300">
+                  PARTNER WITH US
+                </span>
+                <span className="absolute inset-0 bg-black transition-all duration-300 ease-out transform translate-x-full group-hover:translate-x-0"></span>
               </button>
             </div>
           </div>
