@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import FloatingDust from './FloatingDust';
 
 // Interactive 3D Torus Knot
 function Interactive3DObject() {
@@ -429,8 +430,11 @@ function Scene() {
 export default function InfraredLanding() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-white">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 z-0"></div>
+      {/* Floating Dust Effect */}
+      <FloatingDust />
+      
+      {/* Subtle gradient overlay - behind everything */}
+      <div className="fixed inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 -z-10"></div>
       
       {/* Navigation Header - Fixed at the top */}
       <header className="fixed top-0 left-0 right-0 z-50 py-6 px-12">
