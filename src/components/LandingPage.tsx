@@ -482,7 +482,7 @@ export default function InfraredLanding() {
       </AnimatePresence>
 
       {/* Navigation Header - Fixed at the top */}
-      <header className="fixed top-0 left-0 right-0 z-50 py-3 px-4 sm:py-4 sm:px-6 md:py-6 md:px-8 lg:px-12 bg-white/80 backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 py-4 px-4 sm:px-6 md:px-8 lg:px-12 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-black">._INFRARED</h1>
           
@@ -504,7 +504,7 @@ export default function InfraredLanding() {
       <InteractiveGrid />
       
       {/* Main Content Grid */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-20 pb-8 sm:pt-24 sm:pb-12">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-64 pb-12 sm:pt-72 md:pt-80 lg:pt-96">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 w-full">
           
           {/* Left Column - Text Content */}
@@ -569,7 +569,7 @@ export default function InfraredLanding() {
           </div>
 
           {/* Right Column - 3D Canvas */}
-          <div className="lg:col-span-6 flex items-center justify-center mt-8 sm:mt-12 lg:mt-0">
+          <div className="lg:col-span-6 flex items-center justify-center mt-12 sm:mt-16 lg:mt-0">
             <div className="w-full h-[250px] sm:h-[300px] md:h-[400px] lg:h-[500px] -mr-0 sm:-mr-4 lg:-mr-16 xl:-mr-24">
               <Canvas
                 camera={{ position: [0, 0, 10], fov: 40 }}
@@ -583,7 +583,7 @@ export default function InfraredLanding() {
       </div>
 
       {/* Footer info */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 mt-8 sm:mt-12">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-10 sm:py-12 mt-20 sm:mt-24 lg:mt-40">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
           <div className="text-xs text-gray-400 tracking-wider mb-2 sm:mb-0">
             NAIROBI . KENYA
