@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import FloatingDust from './FloatingDust';
+import MobileMenu from './MobileMenu';
 
 // Interactive 3D Torus Knot
 function Interactive3DObject() {
@@ -437,14 +438,21 @@ export default function InfraredLanding() {
       <div className="fixed inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 -z-10"></div>
       
       {/* Navigation Header - Fixed at the top */}
-      <header className="fixed top-0 left-0 right-0 z-50 py-6 px-12">
+      <header className="fixed top-0 left-0 right-0 z-50 py-4 md:py-6 px-4 sm:px-6 lg:px-12 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-3xl font-extrabold text-black">._INFRARED</h1>
-          <nav className="flex space-x-10">
-            <a href="#"  className=" text-2xl hoverfont-extra-bold font-bold text-emerald-600 hover:text-black transition-colors duration-200">About</a>
-            <a href="#"  className=" text-2xl hoverfont-extra-bold font-bold text-emerald-600 hover:text-black transition-colors duration-200">Blog</a>
-            <a href="#"  className=" text-2xl hoverfont-extra-bold font-bold text-emerald-600 hover:text-black transition-colors duration-200">Contact</a>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-black">._INFRARED</h1>
+          
+          {/* Desktop Navigation - Hidden on mobile */}
+          <nav className="hidden lg:flex space-x-8 xl:space-x-10">
+            <a href="#" className="text-lg xl:text-xl font-bold text-emerald-600 hover:text-black transition-colors duration-200">About</a>
+            <a href="#" className="text-lg xl:text-xl font-bold text-emerald-600 hover:text-black transition-colors duration-200">Blog</a>
+            <a href="#" className="text-lg xl:text-xl font-bold text-emerald-600 hover:text-black transition-colors duration-200">Contact</a>
           </nav>
+          
+          {/* Mobile Menu Button - Only shows on mobile */}
+          <div className="lg:hidden">
+            <MobileMenu />
+          </div>
         </div>
       </header>
 
@@ -452,15 +460,15 @@ export default function InfraredLanding() {
       <InteractiveGrid />
       
       {/* Main Content Grid */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-12 flex items-center">
-        <div className="grid grid-cols-12 gap-16 w-full items-center">
+      <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex items-center pt-16 pb-20 sm:py-0">
+        <div className="grid grid-cols-12 gap-8 lg:gap-16 w-full items-center">
           
           {/* Left Column - Text Content */}
-          <div className="col-span-12 lg:col-span-6 space-y-10">
+          <div className="col-span-12 lg:col-span-6 space-y-6 md:space-y-8 lg:space-y-10">
             {/* Logo/Brand */}
             <div className="space-y-3">
               <div className="inline-block">
-                <h1 className="text-7xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900">
                   Infrared
                 </h1>
                 <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-red-500 mt-2"></div>
@@ -469,20 +477,20 @@ export default function InfraredLanding() {
             
             {/* Main Headline */}
             <div className="space-y-6">
-              <h2 className="text-5xl font-light text-gray-900 leading-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-gray-900 leading-tight">
                 We build companies<br />that shape the future
               </h2>
               
-              <p className="text-xl text-gray-600 leading-relaxed max-w-lg font-light">
+              <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-lg font-light">
                 A venture studio at the frontier of technology. We identify paradigm shifts, 
                 architect solutions, and launch products that define new markets.
               </p>
             </div>
 
             {/* Stats/Quick Info */}
-            <div className="flex gap-12 pt-4">
+            <div className="flex flex-wrap gap-6 sm:gap-8 md:gap-10 lg:gap-12 pt-4">
               <div className='flex flex-col items-center'>
-                <div className="text-4xl font-bold text-emerald-600">3+</div>
+                <div className="text-3xl sm:text-4xl font-bold text-emerald-600">3+</div>
                 <div className="text-sm text-gray-500 mt-1">Products in <br />Development</div>
               </div>
               <div className='flex flex-col items-center'>
@@ -513,8 +521,8 @@ export default function InfraredLanding() {
           </div>
 
           {/* Right Column - 3D Canvas */}
-          <div className="col-span-12 lg:col-span-6 h-full flex items-center justify-center overflow-visible">
-            <div className="w-full h-[600px] -mr-16 lg:-mr-24 xl:-mr-32">
+          <div className="col-span-12 lg:col-span-6 h-full flex items-center justify-center overflow-visible mt-8 lg:mt-0">
+            <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px] -mr-0 sm:-mr-8 lg:-mr-16 xl:-mr-24">
               <Canvas
                 camera={{ position: [0, 0, 10], fov: 40 }}
                 style={{ background: 'transparent' }}
@@ -527,7 +535,7 @@ export default function InfraredLanding() {
       </div>
 
       {/* Footer info */}
-      <div className="absolute bottom-8 left-12 right-12 z-10 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-between items-center px-4 sm:px-6 lg:px-12 py-4 bg-white/80 backdrop-blur-sm">
         <div className="text-xs text-gray-400 tracking-wider">
           NAIROBI . KENYA
         </div>
