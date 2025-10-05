@@ -437,6 +437,7 @@ export default function InfraredLanding() {
       
       {/* Main Content Grid */}
       <div className="relative z-10 h-full max-w-7xl mx-auto px-12 flex items-center">
+        <h2 className = "text-black">name</h2>
         <div className="grid grid-cols-12 gap-16 w-full items-center">
           
           {/* Left Column - Text Content */}
