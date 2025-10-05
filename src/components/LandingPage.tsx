@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import { AnimatePresence, motion } from 'framer-motion';
 import FloatingDust from './FloatingDust';
 import MobileMenu from './MobileMenu';
 
@@ -428,19 +429,62 @@ function Scene() {
   );
 }
 
+const navLinks = [
+  { name: 'About', href: '#' },
+  { name: 'Blog', href: '#' },
+  { name: 'Contact', href: '#' },
+];
+
 export default function InfraredLanding() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="relative w-full min-h-screen bg-white overflow-x-hidden">
+    <div className="relative w-full min-h-screen bg-white overflow-hidden">
       {/* Floating Dust Effect */}
       <FloatingDust />
       
       {/* Subtle gradient overlay - behind everything */}
       <div className="fixed inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-red-50/20 -z-10"></div>
       
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+            className="fixed top-0 left-0 right-0 bottom-0 z-40 bg-white flex flex-col items-center justify-center"
+            style={{ 
+              width: '100vw', 
+              height: '100vh',
+              position: 'fixed',
+              overflow: 'hidden'
+            }}
+          >
+            <nav className="flex flex-col items-center justify-center space-y-10 w-full">
+              {navLinks.map((link, index) => (
+                <motion.a
+                  key={link.name}
+                  href={link.href}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-4xl font-bold text-emerald-600 hover:text-black transition-colors duration-200"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </motion.a>
+              ))}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation Header - Fixed at the top */}
-      <header className="fixed top-0 left-0 right-0 z-50 py-4 md:py-6 px-4 sm:px-6 lg:px-12 bg-white/80 backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 py-3 px-4 sm:py-4 sm:px-6 md:py-6 md:px-8 lg:px-12 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-black">._INFRARED</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-black">._INFRARED</h1>
           
           {/* Desktop Navigation - Hidden on mobile */}
           <nav className="hidden lg:flex space-x-8 xl:space-x-10">
@@ -451,7 +495,7 @@ export default function InfraredLanding() {
           
           {/* Mobile Menu Button - Only shows on mobile */}
           <div className="lg:hidden">
-            <MobileMenu />
+            <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} />
           </div>
         </div>
       </header>
@@ -460,62 +504,62 @@ export default function InfraredLanding() {
       <InteractiveGrid />
       
       {/* Main Content Grid */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-20 sm:py-24">
-        <div className="grid grid-cols-12 gap-8 lg:gap-16 w-full">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-20 pb-8 sm:pt-24 sm:pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 w-full">
           
           {/* Left Column - Text Content */}
-          <div className="col-span-12 lg:col-span-6 space-y-6 md:space-y-8 lg:space-y-10">
+          <div className="lg:col-span-6 space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10">
             {/* Logo/Brand */}
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <div className="inline-block">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-900">
                   Infrared
                 </h1>
-                <div className="h-1 w-16 sm:w-20 lg:w-24 bg-gradient-to-r from-emerald-500 to-red-500 mt-2"></div>
+                <div className="h-1 w-12 sm:w-16 md:w-20 lg:w-24 bg-gradient-to-r from-emerald-500 to-red-500 mt-2"></div>
               </div>
             </div>
             
             {/* Main Headline */}
-            <div className="space-y-6">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light text-gray-900 leading-tight">
+            <div className="space-y-3 sm:space-y-4 md:space-y-6">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light text-gray-900 leading-tight">
                 We build companies<br />that shape the future
               </h2>
               
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-lg font-light">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-lg font-light">
                 A venture studio at the frontier of technology. We identify paradigm shifts, 
                 architect solutions, and launch products that define new markets.
               </p>
             </div>
 
             {/* Stats/Quick Info */}
-            <div className="flex flex-wrap gap-4 sm:gap-6 md:gap-8 lg:gap-10 pt-4">
-              <div className='flex flex-col items-center'>
-                <div className="text-3xl sm:text-4xl font-bold text-emerald-600">3+</div>
-                <div className="text-sm text-gray-500 mt-1">Products in <br />Development</div>
+            <div className="flex flex-wrap gap-6 sm:gap-8 md:gap-10 lg:gap-12 pt-2 sm:pt-4">
+              <div className='flex flex-col items-start'>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-600">3+</div>
+                <div className="text-xs sm:text-sm text-gray-500 mt-1">Products in <br />Development</div>
               </div>
-              <div className='flex flex-col items-center'>
-                <div className="text-4xl font-bold text-emerald-600">$100k+</div>
-                <div className="text-sm text-gray-500 mt-1">Targeted Annual <br /> Revenue</div>
+              <div className='flex flex-col items-start'>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-600">$100k+</div>
+                <div className="text-xs sm:text-sm text-gray-500 mt-1">Targeted Annual <br /> Revenue</div>
               </div>
-              <div className='flex flex-col items-center'>
-                <div className="text-4xl font-bold text-emerald-600">4</div>
-                <div className="text-sm text-gray-500 mt-1">Verticals</div>
+              <div className='flex flex-col items-start'>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-600">4</div>
+                <div className="text-xs sm:text-sm text-gray-500 mt-1">Verticals</div>
               </div>
             </div>
 
             {/* CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
               <div className="w-full sm:w-auto">
-                <button className="relative w-full px-6 py-3 sm:px-8 sm:py-4 overflow-hidden group border-2 border-black bg-black">
-                  <span className="relative z-10 text-sm font-medium tracking-wide text-white group-hover:text-black transition-colors duration-300">
+                <button className="relative w-full px-5 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 overflow-hidden group border-2 border-black bg-black">
+                  <span className="relative z-10 text-xs sm:text-sm font-medium tracking-wide text-white group-hover:text-black transition-colors duration-300">
                     VIEW PORTFOLIO
                   </span>
                   <span className="absolute inset-0 bg-white transition-all duration-300 ease-out transform -translate-x-full group-hover:translate-x-0"></span>
                 </button>
               </div>
               <div className="w-full sm:w-auto">
-                <button className="relative w-full px-6 py-3 sm:px-8 sm:py-4 overflow-hidden group border-2 border-black bg-white">
-                  <span className="relative z-10 text-sm font-medium tracking-wide text-black group-hover:text-white transition-colors duration-300">
+                <button className="relative w-full px-5 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 overflow-hidden group border-2 border-black bg-white">
+                  <span className="relative z-10 text-xs sm:text-sm font-medium tracking-wide text-black group-hover:text-white transition-colors duration-300">
                     PARTNER WITH US
                   </span>
                   <span className="absolute inset-0 bg-black transition-all duration-300 ease-out transform translate-x-full group-hover:translate-x-0"></span>
@@ -525,8 +569,8 @@ export default function InfraredLanding() {
           </div>
 
           {/* Right Column - 3D Canvas */}
-          <div className="col-span-12 lg:col-span-6 flex items-center justify-center mt-12 lg:mt-0">
-            <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] -mr-0 sm:-mr-8 lg:-mr-16 xl:-mr-24">
+          <div className="lg:col-span-6 flex items-center justify-center mt-8 sm:mt-12 lg:mt-0">
+            <div className="w-full h-[250px] sm:h-[300px] md:h-[400px] lg:h-[500px] -mr-0 sm:-mr-4 lg:-mr-16 xl:-mr-24">
               <Canvas
                 camera={{ position: [0, 0, 10], fov: 40 }}
                 style={{ background: 'transparent' }}
@@ -539,8 +583,8 @@ export default function InfraredLanding() {
       </div>
 
       {/* Footer info */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 mt-12">
-        <div className="flex flex-col sm:flex-row justify-between items-center">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 mt-8 sm:mt-12">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
           <div className="text-xs text-gray-400 tracking-wider mb-2 sm:mb-0">
             NAIROBI . KENYA
           </div>
@@ -549,5 +593,6 @@ export default function InfraredLanding() {
           </div>
       </div>
     </div>
+  </div>
   );
 }

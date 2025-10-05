@@ -1,17 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
 
-const navLinks = [
-  { name: 'About', href: '#' },
-  { name: 'Blog', href: '#' },
-  { name: 'Contact', href: '#' },
-];
+interface MobileMenuProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
 
-export default function MobileMenu() {
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
   // Prevent scrolling when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -40,31 +36,7 @@ export default function MobileMenu() {
         </div>
       </button>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'tween', ease: 'easeInOut' }}
-            className="fixed inset-0 z-40 bg-white p-8 pt-24 flex flex-col items-center"
-          >
-            <nav className="flex flex-col items-center space-y-8 w-full">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-3xl font-bold text-emerald-600 hover:text-black transition-colors duration-200"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </a>
-              ))}
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
     </div>
   );
 }
