@@ -430,7 +430,7 @@ function Scene() {
 
 export default function InfraredLanding() {
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-white">
+    <div className="relative w-full min-h-screen bg-white overflow-x-hidden">
       {/* Floating Dust Effect */}
       <FloatingDust />
       
@@ -460,35 +460,35 @@ export default function InfraredLanding() {
       <InteractiveGrid />
       
       {/* Main Content Grid */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex items-center pt-16 pb-20 sm:py-0">
-        <div className="grid grid-cols-12 gap-8 lg:gap-16 w-full items-center">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-20 sm:py-24">
+        <div className="grid grid-cols-12 gap-8 lg:gap-16 w-full">
           
           {/* Left Column - Text Content */}
           <div className="col-span-12 lg:col-span-6 space-y-6 md:space-y-8 lg:space-y-10">
             {/* Logo/Brand */}
             <div className="space-y-3">
               <div className="inline-block">
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-900">
                   Infrared
                 </h1>
-                <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-red-500 mt-2"></div>
+                <div className="h-1 w-16 sm:w-20 lg:w-24 bg-gradient-to-r from-emerald-500 to-red-500 mt-2"></div>
               </div>
             </div>
             
             {/* Main Headline */}
             <div className="space-y-6">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-gray-900 leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light text-gray-900 leading-tight">
                 We build companies<br />that shape the future
               </h2>
               
-              <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-lg font-light">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-lg font-light">
                 A venture studio at the frontier of technology. We identify paradigm shifts, 
                 architect solutions, and launch products that define new markets.
               </p>
             </div>
 
             {/* Stats/Quick Info */}
-            <div className="flex flex-wrap gap-6 sm:gap-8 md:gap-10 lg:gap-12 pt-4">
+            <div className="flex flex-wrap gap-4 sm:gap-6 md:gap-8 lg:gap-10 pt-4">
               <div className='flex flex-col items-center'>
                 <div className="text-3xl sm:text-4xl font-bold text-emerald-600">3+</div>
                 <div className="text-sm text-gray-500 mt-1">Products in <br />Development</div>
@@ -504,25 +504,29 @@ export default function InfraredLanding() {
             </div>
 
             {/* CTA */}
-            <div className="flex gap-4 pt-6">
-              <button className="relative px-8 py-4 overflow-hidden group border-2 border-black bg-black">
-                <span className="relative z-10 text-sm font-medium tracking-wide text-white group-hover:text-black transition-colors duration-300">
-                  VIEW PORTFOLIO
-                </span>
-                <span className="absolute inset-0 bg-white transition-all duration-300 ease-out transform -translate-x-full group-hover:translate-x-0"></span>
-              </button>
-              <button className="relative px-8 py-4 overflow-hidden group border-2 border-black bg-white">
-                <span className="relative z-10 text-sm font-medium tracking-wide text-black group-hover:text-white transition-colors duration-300">
-                  PARTNER WITH US
-                </span>
-                <span className="absolute inset-0 bg-black transition-all duration-300 ease-out transform translate-x-full group-hover:translate-x-0"></span>
-              </button>
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <div className="w-full sm:w-auto">
+                <button className="relative w-full px-6 py-3 sm:px-8 sm:py-4 overflow-hidden group border-2 border-black bg-black">
+                  <span className="relative z-10 text-sm font-medium tracking-wide text-white group-hover:text-black transition-colors duration-300">
+                    VIEW PORTFOLIO
+                  </span>
+                  <span className="absolute inset-0 bg-white transition-all duration-300 ease-out transform -translate-x-full group-hover:translate-x-0"></span>
+                </button>
+              </div>
+              <div className="w-full sm:w-auto">
+                <button className="relative w-full px-6 py-3 sm:px-8 sm:py-4 overflow-hidden group border-2 border-black bg-white">
+                  <span className="relative z-10 text-sm font-medium tracking-wide text-black group-hover:text-white transition-colors duration-300">
+                    PARTNER WITH US
+                  </span>
+                  <span className="absolute inset-0 bg-black transition-all duration-300 ease-out transform translate-x-full group-hover:translate-x-0"></span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Right Column - 3D Canvas */}
-          <div className="col-span-12 lg:col-span-6 h-full flex items-center justify-center overflow-visible mt-8 lg:mt-0">
-            <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px] -mr-0 sm:-mr-8 lg:-mr-16 xl:-mr-24">
+          <div className="col-span-12 lg:col-span-6 flex items-center justify-center mt-12 lg:mt-0">
+            <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] -mr-0 sm:-mr-8 lg:-mr-16 xl:-mr-24">
               <Canvas
                 camera={{ position: [0, 0, 10], fov: 40 }}
                 style={{ background: 'transparent' }}
@@ -535,13 +539,14 @@ export default function InfraredLanding() {
       </div>
 
       {/* Footer info */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-between items-center px-4 sm:px-6 lg:px-12 py-4 bg-white/80 backdrop-blur-sm">
-        <div className="text-xs text-gray-400 tracking-wider">
-          NAIROBI . KENYA
-        </div>
-        <div className="text-xs text-gray-400">
-          © 2025 INFRARED VENTURES
-        </div>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 mt-12">
+        <div className="flex flex-col sm:flex-row justify-between items-center">
+          <div className="text-xs text-gray-400 tracking-wider mb-2 sm:mb-0">
+            NAIROBI . KENYA
+          </div>
+          <div className="text-xs text-gray-400">
+            © 2025 INFRARED VENTURES
+          </div>
       </div>
     </div>
   );
