@@ -106,13 +106,17 @@ export default function InfraredChat() {
   });
 
   console.log('[chat widget] Response status:', res.status);
+
   const raw = await res.text();
   console.log('[chat widget] Raw response:', raw);
 
-  const data = JSON.parse(raw);
-  const reply = typeof data === 'string'
-    ? data
-    : data.reply || data.message || 'Sorry, I could not get a response.';
+  let reply: string;
+  try {
+    const data = JSON.parse(raw);
+    reply = typeof data === 'string' ? data : data.reply || data.message || raw;
+  } catch {
+    reply = raw;
+  }
 
   console.log('[chat widget] Final reply:', reply);
 
