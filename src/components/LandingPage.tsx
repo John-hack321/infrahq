@@ -495,7 +495,7 @@ export default function InfraredLanding() {
           
           {/* Mobile Menu Button - Only shows on mobile */}
           <div className="lg:hidden">
-            <MobileMenu />
+            <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} />
           </div>
         </div>
       </header>
