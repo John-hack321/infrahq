@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // ============================================================
 // CONFIGURATION — your n8n webhook URL
 // ============================================================
-const WEBHOOK_URL = 'https://infraredn8n.onrender.com/webhook/chat';
+const WEBHOOK_URL = '/api/chat';
 
 interface Message {
   id: string;
