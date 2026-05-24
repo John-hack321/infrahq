@@ -33,7 +33,7 @@ export default function FloatingDust() {
     }
 
     // Create particles
-    const particlesCount = 200; // Increased number of particles
+    const particlesCount = 6000; // Increased number of particles
     const positions = new Float32Array(particlesCount * 3);
     const sizes = new Float32Array(particlesCount);
     
@@ -49,7 +49,7 @@ export default function FloatingDust() {
       positions[i3 + 2] = radius * Math.cos(phi);
       
       // Random sizes
-      sizes[i] = Math.random() * 1.5 + 0.5;
+      sizes[i] = Math.random() * 1.5 + 3.5;
     }
 
     const geometry = new THREE.BufferGeometry();
