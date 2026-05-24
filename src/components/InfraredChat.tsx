@@ -97,36 +97,43 @@ export default function InfraredChat() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
-      });
+  console.log('[chat widget] Sending message:', text);
+  
+  const res = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: text }),
+  });
 
-      const data = await res.json();
-      const reply =
-        typeof data === 'string'
-          ? data
-          : data.reply || data.message || 'Sorry, I could not get a response.';
+  console.log('[chat widget] Response status:', res.status);
+  const raw = await res.text();
+  console.log('[chat widget] Raw response:', raw);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: reply,
-        },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content:
-            "Sorry, I'm having trouble connecting right now. Please try again shortly.",
-        },
-      ]);
+  const data = JSON.parse(raw);
+  const reply = typeof data === 'string'
+    ? data
+    : data.reply || data.message || 'Sorry, I could not get a response.';
+
+  console.log('[chat widget] Final reply:', reply);
+
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: reply,
+    },
+  ]);
+} catch (err) {
+  console.error('[chat widget] ERROR:', err);
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: 'Sorry, I am having trouble connecting right now. Please try again shortly.',
+    },
+  ]);
     } finally {
       setIsLoading(false);
     }
